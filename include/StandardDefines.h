@@ -3,6 +3,30 @@
 
 #include <string>
 #include <optional>
+#include <vector>
+#include <map>
+#include <unordered_map>
+#include <set>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <array>
+
+using std::vector;
+using std::unordered_map;
+using std::set;
+using std::unordered_set;
+using std::queue;
+using std::stack;
+using std::deque;
+using std::list;
+using std::array;
+
+// Arduino/ESP32 compatible map type as Arduino.h already has a map type
+template <typename K, typename V> 
+using std_map = std::map<K, V>;
 
 // Arduino/ESP32 compatible integer types
 typedef int Int;
