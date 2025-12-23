@@ -75,5 +75,28 @@ using std::optional;
 #define Explicit explicit
 #define NoDiscard [[nodiscard]]
 
+// Standard pointers
+#include <memory>
+using std::shared_ptr;
+using std::unique_ptr;
+using std::weak_ptr;
+
+using std::make_shared;
+
+#define DefineStandardPointers(class_name) \
+    class class_name; \
+    typedef const class_name C##class_name; \
+    typedef shared_ptr<class_name> class_name##SPtr; \
+    typedef const shared_ptr<class_name> C##class_name##SPtr; \
+    typedef weak_ptr<class_name> class_name##WPtr; \
+    typedef const weak_ptr<class_name> C##class_name##WPtr; \
+    typedef shared_ptr<class_name> class_name##Ptr; \
+    typedef const shared_ptr<class_name> C##class_name##Ptr;
+
+#define make_ptr std::make_shared
+
+#define DefineStandardTypes(enum_name) \
+    enum class enum_name; \
+    typedef const enum_name C##enum_name;
 
 #endif // STANDARDEFINES_H
