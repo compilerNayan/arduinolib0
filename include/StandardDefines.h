@@ -99,4 +99,17 @@ using std::make_shared;
     enum class enum_name; \
     typedef const enum_name C##enum_name;
 
+// These macros are used by the preprocessing scripts
+// They need to be defined for compilation to work
+#define COMPONENT
+#define AUTOWIRED  
+#define INTERFACE
+#define SCOPE(SCOPE_TYPE)
+#define VALIDATE_WITH(CLASS_NAME)
+#define VALIDATE
+
+// Template declaration for Implementation
+template <class T>
+struct Implementation;
+
 #endif // STANDARDEFINES_H
