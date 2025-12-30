@@ -13,6 +13,7 @@
 #include <deque>
 #include <list>
 #include <array>
+#include <ArduinoJson.h>
 
 using std::vector;
 using std::unordered_map;
