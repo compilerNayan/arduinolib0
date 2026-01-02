@@ -94,6 +94,6 @@ if __name__ == "__main__":
         project_dir = os.getcwd()
     
     files = get_client_files(project_dir)
-    # for f in files:
-        # print(f)
+    for f in files:
+        print(f)
 
