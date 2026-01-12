@@ -27,7 +27,7 @@ using std::array;
 
 // Arduino/ESP32 compatible map type as Arduino.h already has a map type
 template <typename K, typename V> 
-using std_map = std::map<K, V>;
+using Map = std::map<K, V>;
 
 // Arduino/ESP32 compatible integer types
 typedef int Int;
