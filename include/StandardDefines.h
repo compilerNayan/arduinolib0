@@ -25,9 +25,37 @@ using std::deque;
 using std::list;
 using std::array;
 
+// Template aliases for container types (case-sensitive, consistent naming)
+template <typename T>
+using Vector = std::vector<T>;
+
+template <typename T>
+using List = std::list<T>;
+
+template <typename T>
+using Deque = std::deque<T>;
+
+template <typename T>
+using Set = std::set<T>;
+
+template <typename T>
+using UnorderedSet = std::unordered_set<T>;
+
+template <typename T, std::size_t N>
+using Array = std::array<T, N>;
+
 // Arduino/ESP32 compatible map type as Arduino.h already has a map type
 template <typename K, typename V> 
 using Map = std::map<K, V>;
+
+template <typename K, typename V>
+using UnorderedMap = std::unordered_map<K, V>;
+
+template <typename T>
+using Queue = std::queue<T>;
+
+template <typename T>
+using Stack = std::stack<T>;
 
 // Arduino/ESP32 compatible integer types
 typedef int Int;
