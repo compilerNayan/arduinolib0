@@ -1,10 +1,11 @@
+#ifndef ARDUINO
+
 #ifndef THREAD_POOL_H
 #define THREAD_POOL_H
 
 #include "IThreadPool.h"
 #include <StandardDefines.h>
 
-#ifndef ARDUINO
 
 #include <queue>
 #include <thread>
@@ -151,6 +152,7 @@ Public
     }
 };
 
-#endif // ARDUINO
 
 #endif // THREAD_POOL_H
+
+#endif // ARDUINO
