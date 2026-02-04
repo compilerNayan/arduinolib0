@@ -23,6 +23,7 @@ class ThreadPool final : public IThreadPool {
     Private SemaphoreHandle_t mutex;
     Private SemaphoreHandle_t taskAvailable;
     Private SemaphoreHandle_t allDone;
+    Private SemaphoreHandle_t workersExited;
     Private volatile Bool shutdownFlag;
     Private volatile Bool shutdownNowFlag;
     Private volatile Size runningCount;
@@ -40,11 +41,13 @@ class ThreadPool final : public IThreadPool {
                 }
                 if (shutdownNowFlag) {
                     xSemaphoreGive(mutex);
+                    if (workersExited) { xSemaphoreGive(workersExited); }
                     vTaskDelete(nullptr);
                     return;
                 }
                 if (shutdownFlag && taskQueue.empty()) {
                     xSemaphoreGive(mutex);
+                    if (workersExited) { xSemaphoreGive(workersExited); }
                     vTaskDelete(nullptr);
                     return;
                 }
@@ -88,10 +91,20 @@ Public
         : poolSize(numThreads > 0 ? numThreads : 1)
         , shutdownFlag(false)
         , shutdownNowFlag(false)
-        , runningCount(0) {
+        , runningCount(0)
+        , workersExited(nullptr) {
         mutex = xSemaphoreCreateMutex();
         taskAvailable = xSemaphoreCreateCounting(THREAD_POOL_ESP32_MAX_QUEUE_SIGNALS, 0);
         allDone = xSemaphoreCreateBinary();
+        workersExited = xSemaphoreCreateCounting(static_cast<UBaseType_t>(poolSize), 0);
+        if (!mutex || !taskAvailable || !allDone || !workersExited) {
+            if (mutex) { vSemaphoreDelete(mutex); mutex = nullptr; }
+            if (taskAvailable) { vSemaphoreDelete(taskAvailable); taskAvailable = nullptr; }
+            if (allDone) { vSemaphoreDelete(allDone); allDone = nullptr; }
+            if (workersExited) { vSemaphoreDelete(workersExited); workersExited = nullptr; }
+            poolSize = 0;
+            return;
+        }
         workerHandles.reserve(poolSize);
         for (Size i = 0; i < poolSize; ++i) {
             TaskHandle_t h = nullptr;
@@ -104,9 +117,12 @@ Public
     }
 
     ~ThreadPool() override {
-        if (!shutdownFlag && !shutdownNowFlag) {
+        if (poolSize > 0 && mutex && !shutdownFlag && !shutdownNowFlag) {
             Shutdown();
             WaitForCompletion(0);
+            for (Size i = 0; i < poolSize && workersExited; ++i) {
+                xSemaphoreTake(workersExited, portMAX_DELAY);
+            }
         }
         if (taskAvailable) {
             vSemaphoreDelete(taskAvailable);
@@ -116,6 +132,10 @@ Public
             vSemaphoreDelete(allDone);
             allDone = nullptr;
         }
+        if (workersExited) {
+            vSemaphoreDelete(workersExited);
+            workersExited = nullptr;
+        }
         if (mutex) {
             vSemaphoreDelete(mutex);
             mutex = nullptr;
@@ -123,7 +143,7 @@ Public
     }
 
     Bool Submit(std::function<Void()> task) override {
-        if (!task) {
+        if (!task || !mutex) {
             return false;
         }
         if (xSemaphoreTake(mutex, portMAX_DELAY) != pdTRUE) {
@@ -167,6 +187,7 @@ Public
     }
 
     Bool WaitForCompletion(CUInt timeoutMs = 0) override {
+        if (!mutex) { return true; }
         TickType_t ticks = (timeoutMs == 0) ? portMAX_DELAY : pdMS_TO_TICKS(timeoutMs);
         for (;;) {
             if (xSemaphoreTake(mutex, portMAX_DELAY) != pdTRUE) {
@@ -196,6 +217,7 @@ Public
     }
 
     Size GetPendingCount() const override {
+        if (!mutex) { return 0; }
         if (xSemaphoreTake(mutex, portMAX_DELAY) != pdTRUE) {
             return 0;
         }
